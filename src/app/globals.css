@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ─────────────────────────────────────────────
+   Bloom Room Kenya — Design Tokens & Global CSS
+   Quiet Luxury: Cream · Sage · Blush · Charcoal
+   ───────────────────────────────────────────── */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Color Palette */
+    --color-cream: #FAF7F2;       /* warm off-white / page background */
+    --color-parchment: #F2EDE3;   /* slightly deeper cream for sections */
+    --color-sage: #8A9E8E;        /* muted sage green — primary accent */
+    --color-sage-light: #B4C4B7;  /* lighter sage for borders */
+    --color-sage-dark: #637A67;   /* deep sage for hover states */
+    --color-blush: #E8CAC0;       /* soft blush / rose accent */
+    --color-gold: #C9A96E;        /* warm gold accent for decorative lines */
+    --color-charcoal: #2C2C2C;    /* near-black for headings and body */
+    --color-taupe: #8E8278;       /* muted taupe for secondary text */
+
+    /* Typography */
+    --font-cormorant: var(--font-cormorant);   /* editorial serif */
+    --font-inter: var(--font-inter);           /* clean sans-serif */
+
+    /* Spacing */
+    --section-padding-x: clamp(1.5rem, 6vw, 8rem);
+    --section-padding-y: clamp(5rem, 10vh, 10rem);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100svh;
+  }
+
+  /* Focus ring — accessible and elegant */
+  :focus-visible {
+    outline: 2px solid var(--color-sage);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Selection colour */
+  ::selection {
+    background-color: var(--color-blush);
+    color: var(--color-charcoal);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─────────────────────────────────────────────
+   Tailwind Custom Theme Extension
+   ───────────────────────────────────────────── */
+
+@theme {
+  /* Colors */
+  --color-bloom-cream: #FAF7F2;
+  --color-bloom-parchment: #F2EDE3;
+  --color-bloom-sage: #8A9E8E;
+  --color-bloom-sage-light: #B4C4B7;
+  --color-bloom-sage-dark: #637A67;
+  --color-bloom-blush: #E8CAC0;
+  --color-bloom-gold: #C9A96E;
+  --color-bloom-charcoal: #2C2C2C;
+  --color-bloom-taupe: #8E8278;
+
+  /* Font families */
+  --font-family-cormorant: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-family-inter: var(--font-inter), Inter, system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────
+   Utility Classes
+   ───────────────────────────────────────────── */
+
+@layer utilities {
+  .font-cormorant {
+    font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  }
+
+  .font-inter {
+    font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  }
+
+  .section-padding {
+    padding-inline: var(--section-padding-x);
+    padding-block: var(--section-padding-y);
+  }
+
+  /* Subtle grain texture overlay */
+  .texture-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
 }

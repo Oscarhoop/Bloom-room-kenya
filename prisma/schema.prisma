@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+model Product {
+  id                String      @id @default(cuid())
+  name              String
+  slug              String      @unique
+  description       String
+  shortDescription  String?
+  priceKes          Int
+  comparePriceKes   Int?
+  imageUrls         String[]
+  thumbnailUrl      String?
+  sku               String      @unique
+  stockQuantity     Int         @default(0)
+  lowStockThreshold Int         @default(5)
+  isInStock         Boolean     @default(true)
+  isFeatured        Boolean     @default(false)
+  isNew             Boolean     @default(false)
+  isBestSeller      Boolean     @default(false)
+  isAvailable       Boolean     @default(true)
+  availableColors   String[]
+  availableSizes    String[]
+  metaTitle         String?
+  metaDescription   String?
+  categoryId        String
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  orderItems        OrderItem[]
+  category          Category    @relation(fields: [categoryId], references: [id])
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([isBestSeller])
+  @@map("products")
+}
+
+model Customer {
+  id             String   @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  phone          String?
+  mpesaPhone     String?
+  defaultAddress Json?
+  passwordHash   String?
+  emailVerified  Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  orders         Order[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("customers")
+}
+
+model Order {
+  id                 String           @id @default(cuid())
+  orderNumber        String           @unique
+  customerId         String
+  giftMessage        String?
+  isGift             Boolean          @default(false)
+  recipientName      String?
+  recipientPhone     String?
+  deliveryDate       DateTime
+  deliveryTimeSlot   DeliveryTimeSlot
+  deliveryAddress    Json
+  deliveryNotes      String?
+  subtotalKes        Int
+  deliveryFeeKes     Int              @default(0)
+  discountKes        Int              @default(0)
+  totalKes           Int
+  couponCode         String?
+  orderStatus        OrderStatus      @default(PENDING)
+  paymentStatus      PaymentStatus    @default(UNPAID)
+  paymentMethod      PaymentMethod?
+  mpesaReceiptNumber String?
+  internalNotes      String?
+  confirmedAt        DateTime?
+  deliveredAt        DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  customAdminNotes   String?
+  customBudget       String?
+  customOccasion     String?
+  customTheme        String?
+  orderType          OrderType        @default(REGULAR)
+  items              OrderItem[]
+  customer           Customer         @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([orderStatus])
+  @@index([orderType])
+  @@index([deliveryDate])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String
+  productName   String
+  productSku    String
+  thumbnailUrl  String?
+  selectedColor String?
+  selectedSize  String?
+  unitPriceKes  Int
+  quantity      Int      @default(1)
+  subtotalKes   Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model CustomOrder {
+  id                String            @id @default(cuid())
+  orderNumber       String            @unique
+  theme             String
+  name              String
+  phone             String
+  email             String
+  occasion          String
+  budget            String
+  deliveryDate      DateTime
+  recipientLocation String
+  specialRequests   String?
+  status            CustomOrderStatus @default(PENDING)
+  adminNotes        String?
+  contactedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  finalPriceKes     Int?
+  paymentStatus     PaymentStatus     @default(UNPAID)
+
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([deliveryDate])
+  @@index([orderNumber])
+  @@map("custom_orders")
+}
+
+enum DeliveryTimeSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+  EXPRESS
+}
+
+enum OrderType {
+  REGULAR
+  CUSTOM
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  ARRANGING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  CARD
+  CASH_ON_DELIVERY
+  BANK_TRANSFER
+}
+
+enum CustomOrderStatus {
+  PENDING
+  CONTACTED
+  CONFIRMED
+  IN_PROGRESS
+  READY
+  DELIVERED
+  CANCELLED
+}
