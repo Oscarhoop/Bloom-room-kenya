@@ -15,15 +15,14 @@ export default function Logo({ className = "", size = "md" }: LogoProps) {
 
   return (
     <Link href="/" className={`flex items-center ${className}`} aria-label="Bloom Room Kenya — Home">
-      <Image
-        src="/logo.png"
-        alt="Bloom Room Kenya"
-        className={`${sizeClasses[size]} object-contain bg-transparent`}
-        width={240}
-        height={80}
-        priority
-        style={{ backgroundColor: 'transparent' }}
-      />
+      <Image 
+  src="/logo.png" 
+  alt="Bloom Room Logo" 
+  width={140} 
+  height={46} 
+  priority // 👉 Add this to fix the LCP warning
+  className="mix-blend-multiply h-auto w-auto object-contain" // 👉 'h-auto' fixes the aspect ratio warning
+/>
     </Link>
   );
 }

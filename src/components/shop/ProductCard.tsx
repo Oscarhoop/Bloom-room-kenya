@@ -50,14 +50,21 @@ export default function ProductCard({
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
 
+  // 1. Logic for image selection (safe fallbacks)
+  const baseImage = thumbnailUrl ?? imageUrls?.[0] ?? null;
+  
+  // 2. Use Weserv proxy to bypass Instagram 403 blocks
+  const imageSrc = baseImage 
+    ? `https://images.weserv.nl/?url=${encodeURIComponent(baseImage)}` 
+    : null;
+
   function handleAddToOrder(e: React.MouseEvent) {
-    e.preventDefault(); // don't follow the card link
-    addItem({ id, slug, name, priceKes, imageUrl: thumbnailUrl ?? imageUrls[0] ?? null });
+    e.preventDefault(); 
+    addItem({ id, slug, name, priceKes, imageUrl: baseImage });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   }
-  const imageSrc = thumbnailUrl ?? imageUrls[0] ?? null;
-  const isExternal = imageSrc?.startsWith("http");
+
   const discount =
     comparePriceKes && comparePriceKes > priceKes
       ? Math.round(((comparePriceKes - priceKes) / comparePriceKes) * 100)
@@ -72,19 +79,18 @@ export default function ProductCard({
       className="group relative flex flex-col bg-bloom-cream"
     >
       <Link href={`/shop/${slug}`} className="block overflow-hidden" aria-label={`View ${name}`}>
-        {/* Product Image */}
+        {/* Product Image Wrapper */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-bloom-parchment">
           {imageSrc ? (
-            <Image
+            <img
               src={imageSrc}
-              alt={name}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              unoptimized={isExternal}
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              alt={name || 'Flower bouquet'}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+              referrerPolicy="no-referrer" 
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center bg-bloom-cream/50">
               <span className="text-4xl">🌸</span>
             </div>
           )}
@@ -92,17 +98,17 @@ export default function ProductCard({
           {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-col gap-1.5">
             {isNew && (
-              <span className="font-inter bg-bloom-sage px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-cream">
+              <span className="bg-bloom-sage px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-cream">
                 New
               </span>
             )}
             {isBestSeller && (
-              <span className="font-inter bg-bloom-charcoal px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-cream">
+              <span className="bg-bloom-charcoal px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-cream">
                 Best Seller
               </span>
             )}
-            {discount && (
-              <span className="font-inter bg-bloom-blush px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-charcoal">
+            {discount && (discount > 0) && (
+              <span className="bg-bloom-blush px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-bloom-charcoal">
                 -{discount}%
               </span>
             )}
@@ -110,7 +116,7 @@ export default function ProductCard({
 
           {/* Quick-view overlay */}
           <div className="absolute inset-0 flex items-end justify-center bg-bloom-charcoal/0 pb-6 opacity-0 transition-all duration-500 group-hover:bg-bloom-charcoal/10 group-hover:opacity-100">
-            <span className="font-inter translate-y-3 border border-bloom-cream/80 bg-bloom-cream/80 px-6 py-2.5 text-xs font-medium uppercase tracking-[0.16em] text-bloom-charcoal backdrop-blur-sm transition-transform duration-500 group-hover:translate-y-0">
+            <span className="translate-y-3 border border-bloom-cream/80 bg-bloom-cream/80 px-6 py-2.5 text-xs font-medium uppercase tracking-[0.16em] text-bloom-charcoal backdrop-blur-sm transition-transform duration-500 group-hover:translate-y-0">
               View Details
             </span>
           </div>
@@ -118,25 +124,22 @@ export default function ProductCard({
 
         {/* Product Info */}
         <div className="mt-4 px-1">
-          <p className="font-inter mb-1 text-[10px] uppercase tracking-[0.18em] text-bloom-sage">
-            {/* Category label passed from parent */}
-          </p>
           <h3 className="font-cormorant text-lg font-light leading-snug text-bloom-charcoal transition-colors duration-300 group-hover:text-bloom-sage-dark">
             {name}
           </h3>
 
           {shortDescription && (
-            <p className="font-inter mt-1.5 line-clamp-2 text-xs leading-relaxed text-bloom-taupe">
+            <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-bloom-taupe">
               {shortDescription}
             </p>
           )}
 
           <div className="mt-3 flex items-center gap-3">
-            <span className="font-inter text-sm font-medium text-bloom-charcoal">
+            <span className="text-sm font-medium text-bloom-charcoal">
               {formatKes(priceKes)}
             </span>
             {comparePriceKes && comparePriceKes > priceKes && (
-              <span className="font-inter text-xs text-bloom-taupe line-through">
+              <span className="text-xs text-bloom-taupe line-through">
                 {formatKes(comparePriceKes)}
               </span>
             )}
@@ -150,7 +153,7 @@ export default function ProductCard({
         whileTap={{ scale: 0.97 }}
         id={`add-to-cart-${slug}`}
         aria-label={`Add ${name} to order`}
-        className={`font-inter mt-4 w-full py-3 text-xs font-medium uppercase tracking-[0.16em] transition-all duration-300 ${
+        className={`mt-4 w-full py-3 text-xs font-medium uppercase tracking-[0.16em] transition-all duration-300 ${
           added
             ? "bg-bloom-sage text-bloom-cream"
             : "border border-bloom-charcoal/20 bg-transparent text-bloom-charcoal/70 hover:border-bloom-charcoal hover:bg-bloom-charcoal hover:text-bloom-cream"
